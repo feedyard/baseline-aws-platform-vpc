@@ -1,0 +1,61 @@
+---
+version: 2.1
+
+orbs:
+  common-tasks: feedyard/common-pipeline-tasks@0.1.5
+  terraform: feedyard/terraform@dev:latest
+
+workflows:
+  version: 2.1
+
+  baseline-aws-platform-vpc-pipeline:
+    jobs:
+      - terraform/lint:
+          context: global
+      - terraform/plan:
+          name: dev-release-plan
+          context: global
+          prefix: feedyard
+          account: sandbox
+          env: sandbox
+          aws-access-key-id: $FEEDYARD_SANDBOX_CI_AWS_ACCESS_KEY_ID
+          aws-secret-access-key: $FEEDYARD_SANDBOC_CI_AWS_SECRET_ACCESS_KEY
+          aws-region: us-east-1
+          bucket-region: us-east-1
+          filters:
+            branches:
+              only: master
+            tags:
+              ignore: /.*/
+      - approve-dev-release-plan:
+          type: approval
+          requires:
+            - dev-release-plan
+      - terraform/apply:
+          name: apply-dev-release-plan
+          context: global
+          prefix: feedyard
+          account: sandbox
+          env: sandbox
+          aws-access-key-id: $FEEDYARD_SANDBOX_CI_AWS_ACCESS_KEY_ID
+          aws-secret-access-key: $FEEDYARD_SANDBOC_CI_AWS_SECRET_ACCESS_KEY
+          aws-region: us-east-1
+          bucket-region: us-east-1
+          requires:
+            - approve-dev-release-plan
+      - approve-dev-destroy:
+          type: approval
+          requires:
+            - apply-dev-release-plan
+      - terraform/destroy:
+          name: dev-destroy
+          context: global
+          prefix: feedyard
+          account: sandbox
+          env: sandbox
+          aws-access-key-id: $FEEDYARD_SANDBOX_CI_AWS_ACCESS_KEY_ID
+          aws-secret-access-key: $FEEDYARD_SANDBOC_CI_AWS_SECRET_ACCESS_KEY
+          aws-region: us-east-1
+          bucket-region: us-east-1
+          requires:
+            - approve-dev-destroy

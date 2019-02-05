@@ -1,0 +1,39 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.1.0
+    hooks:
+      - id: check-merge-conflict
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: forbid-new-submodules
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.8.1
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate_with_variables
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: python
+        files: '(.*?)\.py$'
+  - repo: local
+    hooks:
+      - id: tf-modules
+        name: get dependent terraform modules
+        language: system
+        entry: terraform
+        pass_filenames: false
+        files: '(.*?)\.tf$'
+        args: [get]
+  - repo: local
+    hooks:
+      - id: tflint
+        name: tflint
+        entry: tflint
+        language: system
+        files: '(.*?)\.tf$'
+        args: [--var-file=sandbox.json]

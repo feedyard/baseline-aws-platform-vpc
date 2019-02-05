@@ -1,1 +1,2 @@
-# baseline-aws-platform-vpc
+# baseline-platform-aws-resources
+
